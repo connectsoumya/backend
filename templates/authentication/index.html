@@ -13,8 +13,25 @@
         <link rel="stylesheet" href="">
     </head>
     <body>
+        {% comment %} {% for message in messages %}
+        <div class="alert aert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <strong>Message: </strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %} {% endcomment %}
+
+        {% if user.is_authenticated %}
+        <h3>Hi {{first_name}}</h3>
+        <button type="submit"><a href="/sign_out">Sign out</a></button>
+
+        {% else %}
         <button type="submit"><a href="/create_account">Create Account</a></button>
         <button type="submit"><a href="/sign_in">Sign In</a></button>
+
+        {% endif %}
+
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->

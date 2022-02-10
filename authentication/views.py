@@ -1,9 +1,10 @@
-import django
+import hashlib
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from .api import *
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+# from api.dynamodbapi import *
 
 # Create your views here.
 def home(request):
@@ -19,20 +20,44 @@ def create_account(request):
         password = request.POST.get('password')
         password_verify = request.POST.get('password_verify')
 
-        # Save to Database
-        # new_user = User.objects.create_user(username, email, password)
-        # new_user.first_name = first_name
-        # new_user.last_name = last_name
-        # new_user.save()
+        if User.objects.filter(username=username):
+            messages.error(request, 'Username already exists')
+        elif User.objects.filter(email=email):
+            messages.error(request, 'Email already exists')
+        elif password != password_verify:
+            messages.success(request, 'Passwords do not match. Please try again')
+        else:
+            password = hashlib.sha256(password.encode())
 
-        messages.success(request, 'Account created successfully')
+            # Save to Database
+            # new_user = User.objects.create_user(username, email, password)
+            # new_user.first_name = first_name
+            # new_user.last_name = last_name
+            # new_user.save()
 
-        return redirect('authentication/sign_in')
+            messages.error(request, 'Account created successfully')
+
+            return redirect('/sign_in')
 
     return render(request, 'authentication/create_account.html')
 
 def sign_in(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        
+        if user is None:
+            messages.error(request, 'Wrong username or password')
+            return render(request, 'authentication/sign_in.html', {'user': user})
+        else:
+            login(request, user)
+            first_name = user.first_name
+            return render(request, 'authentication/index.html', {'first_name': first_name})
+            
+
     return render(request, 'authentication/sign_in.html')
 
 def sign_out(request):
-    return render(request, 'authentication/sign_out.html')
+    logout(request)
+    return render(request, 'authentication/index.html')
